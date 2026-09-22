@@ -1,1 +1,0 @@
-Open index.html in a modern browser. Scroll or use PageDown/ArrowDown. This prototype is intentionally only SPACE → CLOUDS.
