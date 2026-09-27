@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yathraloop — Space to Clouds</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#02040b;color:#fff}
+#space,#clouds{position:absolute;inset:0;width:100vw;height:100vh}
+#space{background:radial-gradient(circle at 50% 50%,#182b59 0%,#081127 35%,#02040b 75%)}
+#starCanvas{position:absolute;inset:0;width:100%;height:100%}
+#spaceVignette{position:absolute;inset:0;background:radial-gradient(ellipse,transparent 25%,rgba(0,0,0,.55) 100%);pointer-events:none}
+.logoText{position:absolute;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;white-space:nowrap}
+.logoText .name{font-size:clamp(42px,8vw,105px);font-weight:600;letter-spacing:.18em}
+.logoText .tag{font-family:Georgia,serif;font-size:clamp(16px,2vw,27px);margin-top:18px;opacity:.88}
+.logoText .scroll{font-size:9px;letter-spacing:.3em;margin-top:75px;opacity:.6}.scroll b{display:block;font-size:25px;margin-top:10px}
+#clouds{opacity:0;transform:translateY(100vh);background:linear-gradient(#718592 0%,#b7c5c8 40%,#eef1ed 100%)}
+.cloud{position:absolute;border-radius:50%;filter:blur(12px);background:rgba(255,255,255,.98);box-shadow:0 0 70px rgba(255,255,255,.6)}
+.cloud:before,.cloud:after{content:"";position:absolute;background:inherit;border-radius:50%}
+.c1{width:70vw;height:25vh;left:-18vw;bottom:-8vh}.c1:before{width:35vw;height:30vh;left:25vw;top:-12vh}.c1:after{width:30vw;height:25vh;left:47vw;top:-8vh}
+.c2{width:65vw;height:22vh;right:-20vw;bottom:10vh}.c2:before{width:30vw;height:28vh;left:12vw;top:-12vh}.c2:after{width:24vw;height:22vh;left:30vw;top:-8vh}
+.c3{width:55vw;height:19vh;left:22vw;top:3vh;opacity:.82}.c3:before{width:25vw;height:23vh;left:12vw;top:-12vh}.c3:after{width:22vw;height:20vh;left:29vw;top:-8vh}
+.c4{width:60vw;height:20vh;left:-25vw;top:37vh;opacity:.72}.c4:before{width:28vw;height:24vh;left:28vw;top:-11vh}.c4:after{width:24vw;height:21vh;left:46vw;top:-7vh}
+.skyText{position:absolute;z-index:5;left:9vw;top:25vh;color:#17252a;opacity:0;transform:translateY(40px)}
+.skyText .small{font-size:10px;letter-spacing:.28em}.skyText h1{font-family:Georgia,serif;font-weight:400;font-size:clamp(55px,9vw,125px);line-height:.85;margin:22px 0}.skyText p{font-size:18px;opacity:.7}
+.hud{position:fixed;z-index:20;left:25px;right:25px;top:22px;display:flex;justify-content:space-between;font-size:9px;letter-spacing:.25em;opacity:.7}.bar{position:fixed;z-index:20;right:18px;top:50%;height:100px;width:2px;background:#ffffff33}.bar i{display:block;background:#fff;width:100%;height:0}
+@media(max-width:600px){.logoText .name{letter-spacing:.1em}.cloud{filter:blur(8px)}.skyText{left:8vw}}
+</style>
+</head>
+<body>
+<section id="space">
+<canvas id="starCanvas"></canvas><div id="spaceVignette"></div>
+<div class="logoText" id="logo"><div class="name">YATHRALOOP</div><div class="tag">Experiences to be remembered.</div><div class="scroll">SCROLL TO BEGIN<b>↓</b></div></div>
+</section>
+
+<section id="clouds">
+<div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div><div class="cloud c4"></div>
+<div class="skyText" id="skyText"><div class="small">02 / THE JOURNEY BEGINS</div><h1>This is<br>Yathraloop.</h1><p>Where the journey becomes the memory.</p></div>
+</section>
+
+<div class="hud"><span>YATHRALOOP</span><span id="chapter">THE BEGINNING</span></div><div class="bar"><i id="bar"></i></div>
+
+<script>
+const canvas=document.getElementById('starCanvas'),ctx=canvas.getContext('2d');
+let W,H,dpr,stars=[];
+function resize(){
+ dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+ canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);
+ stars=Array.from({length:Math.max(180,Math.floor(W*H/6500))},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.7+.25,a:Math.random()*.9+.1,s:Math.random()*1.8+.3}));
+}
+addEventListener('resize',resize);resize();
+function drawStars(t){
+ ctx.clearRect(0,0,W,H);
+ for(const s of stars){
+   const tw=.55+.45*Math.sin(t*.001*s.s+s.x);
+   ctx.beginPath();ctx.arc(s.x,s.y,s.r*tw,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.a*tw})`;ctx.fill();
+ }
+ requestAnimationFrame(drawStars);
+}
+requestAnimationFrame(drawStars);
+
+let progress=0,target=0;
+addEventListener('wheel',e=>{target=Math.max(0,Math.min(1,target+e.deltaY*.0012))},{passive:true});
+let lastY=null;
+addEventListener('touchstart',e=>lastY=e.touches[0].clientY,{passive:true});
+addEventListener('touchmove',e=>{let y=e.touches[0].clientY;target=Math.max(0,Math.min(1,target+(lastY-y)*.004));lastY=y},{passive:true});
+addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='PageDown')target=Math.min(1,target+.12);if(e.key==='ArrowUp'||e.key==='PageUp')target=Math.max(0,target-.12)});
+
+function animate(){
+ progress+=(target-progress)*.075;
+ const p=progress;
+ const space=document.getElementById('space'),clouds=document.getElementById('clouds'),logo=document.getElementById('logo'),sky=document.getElementById('skyText');
+ space.style.transform=`translateY(${-p*100}vh) scale(${1+p*.06})`;
+ clouds.style.opacity=Math.min(1,p*2.2);
+ clouds.style.transform=`translateY(${(1-p)*100}vh) scale(${.94+p*.06})`;
+ logo.style.transform=`translate(-50%,calc(-50% - ${p*90}px)) scale(${1-p*.16})`;
+ logo.style.opacity=Math.max(0,1-p*1.8);
+ document.querySelectorAll('.cloud').forEach((c,i)=>c.style.transform=`translate(${(p-.35)*(i%2?120:-100)}px,${(p-.35)*-90}px)`);
+ sky.style.opacity=Math.max(0,Math.min(1,(p-.48)*3));
+ sky.style.transform=`translateY(${40-(p-.48)*55}px)`;
+ document.getElementById('chapter').textContent=p<.48?'THE BEGINNING':'BETWEEN THE CLOUDS';
+ document.getElementById('bar').style.height=(p*100)+'%';
+ requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>
